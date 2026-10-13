@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IrisLab – Iris Flower Classification</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="#top">🌸 IrisLab</a>
+  <nav>
+    <a href="#dataset">1 Load</a>
+    <a href="#explore">2 Explore</a>
+    <a href="#split">3 Split</a>
+    <a href="#preprocess">4 Preprocess</a>
+    <a href="#train">5 Train</a>
+    <a href="#evaluate">6 Evaluate</a>
+    <a href="#predict" class="cta">Try it</a>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <p class="eyebrow">Machine Learning · Classification</p>
+  <h1>Iris Flower Classification</h1>
+  <p class="lead">
+    <strong>Objective:</strong> classify iris flowers into three species –
+    <span class="chip c0">Setosa</span>
+    <span class="chip c1">Versicolor</span>
+    <span class="chip c2">Virginica</span>
+    – using the measurements of their sepals and petals.
+  </p>
+  <div class="stats" id="heroStats"></div>
+  <p class="note">Every number and chart on this page is computed by real scikit-learn code (<code>export_data.py</code>) on the real dataset – nothing is hardcoded.</p>
+</section>
+
+<!-- ============ PROBLEM ============ -->
+<section class="card">
+  <h2>The problem in plain words</h2>
+  <p>
+    Imagine you find an iris flower and want to know its species. A botanist would measure it:
+    how long and wide are the <b>sepals</b> (the outer green leaves of the bud) and the
+    <b>petals</b> (the coloured part)? Our goal is to teach a computer to do the same:
+    given <b>4 numbers</b>, predict <b>1 of 3 species</b>.
+  </p>
+  <p>
+    This is called <b>supervised classification</b>: we show the computer many flowers whose species we
+    already know (<i>training data</i>), it learns the pattern, and then we test it on flowers it has never
+    seen (<i>test data</i>).
+  </p>
+  <div class="steps">
+    <a href="#dataset"><b>1</b>Load data</a>
+    <a href="#explore"><b>2</b>Explore visually</a>
+    <a href="#split"><b>3</b>Train/test split</a>
+    <a href="#preprocess"><b>4</b>Preprocess</a>
+    <a href="#train"><b>5</b>Train models</a>
+    <a href="#evaluate"><b>6</b>Evaluate</a>
+  </div>
+</section>
+
+<!-- ============ 1 LOAD ============ -->
+<section class="card" id="dataset">
+  <span class="step-no">Step 1</span>
+  <h2>Load the dataset</h2>
+  <p>
+    We use the classic <b>Iris dataset</b>, bundled with scikit-learn
+    (<code>load_iris()</code>; also available from the UCI Repository). The measurements were collected by the
+    botanist <b>Edgar Anderson</b> and made famous by the statistician <b>R.A. Fisher</b> in his 1936 paper.
+  </p>
+  <div class="grid2">
+    <div>
+      <h3>What is in it?</h3>
+      <ul>
+        <li><b id="nRows"></b> flowers – exactly 50 of each species (a <i>balanced</i> dataset).</li>
+        <li><b>4 features</b> (inputs), all in centimetres: sepal length, sepal width, petal length, petal width.</li>
+        <li><b>1 target</b> (output): the species – Setosa, Versicolor or Virginica.</li>
+        <li><b>No missing values</b>, so the data is already clean.</li>
+        <li><b id="nDup"></b> rows are exact duplicates of another row (computed, and harmless here).</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Summary statistics (all flowers)</h3>
+      <div id="overallStats"></div>
+    </div>
+  </div>
+  <h3>Browse the data</h3>
+  <div class="toolbar">
+    <label>Species
+      <select id="rowFilter">
+        <option value="-1">All</option>
+      </select>
+    </label>
+    <span class="muted" id="rowCount"></span>
+  </div>
+  <div class="table-scroll" id="rowTable"></div>
+</section>
+
+<!-- ============ 2 EXPLORE ============ -->
+<section class="card" id="explore">
+  <span class="step-no">Step 2</span>
+  <h2>Explore the data visually</h2>
+  <p>
+    Before building any model, we <b>look at the data</b>. Good exploration tells us which features matter and how
+    hard the problem will be. Colour <i>and</i> marker shape show the species (shapes help colour-blind readers).
+  </p>
+  <div class="legend" id="legend"></div>
+
+  <h3>Scatter plot</h3>
+  <div class="toolbar">
+    <label>X axis <select id="selX"></select></label>
+    <label>Y axis <select id="selY"></select></label>
+  </div>
+  <div class="grid2">
+    <div class="chart" id="mainScatter"></div>
+    <div id="scatterNote" class="insight"></div>
+  </div>
+
+  <h3>Histograms – how each feature is distributed</h3>
+  <p class="muted">Overlapping bars of the three species. Less overlap = that feature separates the species better.</p>
+  <div class="grid4" id="hists"></div>
+
+  <h3>All feature pairs (pair plot)</h3>
+  <div class="grid3" id="pairs"></div>
+
+  <div class="grid2">
+    <div>
+      <h3>Correlation heatmap</h3>
+      <p class="muted">Pearson correlation between features (−1 to +1).</p>
+      <div id="heatmap"></div>
+    </div>
+    <div>
+      <h3>Which feature separates species best?</h3>
+      <p class="muted">One-way ANOVA F-statistic (computed with <code>f_classif</code>). Bigger = better separation.</p>
+      <div id="anovaBars"></div>
+    </div>
+  </div>
+
+  <h3>Average measurements per species</h3>
+  <div id="classStats" class="table-scroll"></div>
+
+  <div class="insight" id="exploreInsight"></div>
+</section>
+
+<!-- ============ 3 SPLIT ============ -->
+<section class="card" id="split">
+  <span class="step-no">Step 3</span>
+  <h2>Split into training and test sets</h2>
+  <p>
+    If we tested the model on the same flowers it learned from, it could just <i>memorise</i> them and we would
+    learn nothing about how it handles new flowers. So we hide part of the data:
+  </p>
+  <ul>
+    <li><b>Training set (80%)</b> – the model learns from these flowers.</li>
+    <li><b>Test set (20%)</b> – kept locked away until the end, used only to measure performance.</li>
+  </ul>
+  <p>
+    We use a <b>stratified</b> split (<code>stratify=y</code>), which keeps the species balanced in both sets, and a fixed
+    <b>random seed</b> (<code id="seedTxt"></code>) so anyone can reproduce the same split.
+  </p>
+  <div class="grid2">
+    <div>
+      <h4>Training set <span class="muted" id="trainN"></span></h4>
+      <div class="dots" id="trainDots"></div>
+    </div>
+    <div>
+      <h4>Test set <span class="muted" id="testN"></span></h4>
+      <div class="dots" id="testDots"></div>
+    </div>
+  </div>
+  <div id="splitTable" class="table-scroll"></div>
+</section>
+
+<!-- ============ 4 PREPROCESS ============ -->
+<section class="card" id="preprocess">
+  <span class="step-no">Step 4</span>
+  <h2>Preprocess the data</h2>
+  <p>
+    The Iris data is already clean: no missing values, no text columns, no obvious errors. The only thing we do is
+    <b>feature scaling</b> with <code>StandardScaler</code>: each feature is shifted and stretched to have
+    <b>mean 0 and standard deviation 1</b>:
+  </p>
+  <p class="formula">z = (x − mean) ÷ standard deviation</p>
+  <p>
+    Why? Models like KNN measure <i>distances</i> between flowers and Logistic Regression is trained by gradient-based
+    optimisation, so features on different scales can distort them. (Decision Trees don't need scaling, but it does no harm.)
+  </p>
+  <div class="insight warn">
+    <b>Avoiding data leakage:</b> the scaler is fitted on the <u>training set only</u>, then applied to the test set.
+    If we fitted it on all the data, information from the test flowers would secretly leak into training and make the
+    results look better than they really are.
+  </div>
+  <div id="scalerTable" class="table-scroll"></div>
+  <p class="muted" id="scalerExample"></p>
+</section>
+
+<!-- ============ 5 TRAIN ============ -->
+<section class="card" id="train">
+  <span class="step-no">Step 5</span>
+  <h2>Train simple classifiers</h2>
+  <p>
+    <b>Training</b> (<code>model.fit(X_train, y_train)</code>) means letting the algorithm find the pattern that links
+    the 4 measurements to the species. We train three popular, easy-to-understand models on the exact same data so
+    they can be compared fairly.
+  </p>
+  <div class="grid3" id="modelCards"></div>
+
+  <h3>Peek inside the Decision Tree</h3>
+  <p class="muted">The tree learned this set of yes/no questions (thresholds shown in cm). <i>n</i> = training flowers reaching that point.</p>
+  <div class="tree" id="treeView"></div>
+</section>
+
+<!-- ============ 6 EVALUATE ============ -->
+<section class="card" id="evaluate">
+  <span class="step-no">Step 6</span>
+  <h2>Evaluate the results</h2>
+  <p>
+    Now we unlock the <b>test set</b> and ask each model to classify flowers it has never seen. We compare its
+    predictions with the true species using these metrics:
+  </p>
+
+  <div class="grid4 metric-defs">
+    <div><h4>Accuracy</h4><p>Share of all predictions that were correct.</p><code>correct ÷ total</code></div>
+    <div><h4>Precision</h4><p>Of the flowers predicted as a species, how many really were that species?</p><code>TP ÷ (TP + FP)</code></div>
+    <div><h4>Recall</h4><p>Of the flowers that truly are a species, how many did we find?</p><code>TP ÷ (TP + FN)</code></div>
+    <div><h4>F1-score</h4><p>One number balancing precision and recall (their harmonic mean).</p><code>2·P·R ÷ (P + R)</code></div>
+  </div>
+  <p class="muted">With 3 classes, precision/recall/F1 are computed per species and then <b>macro-averaged</b> (simple average of the three).</p>
+
+  <h3>Test-set scores</h3>
+  <div class="table-scroll" id="metricTable"></div>
+  <div class="chart" id="metricBars"></div>
+
+  <h3>Confusion matrices</h3>
+  <p>
+    Rows = the <b>true</b> species, columns = what the model <b>predicted</b>. Numbers on the diagonal are correct
+    predictions; anything off the diagonal is a mistake.
+  </p>
+  <div class="grid3" id="confusions"></div>
+  <div class="insight" id="workedExample"></div>
+
+  <h3>Per-species report</h3>
+  <div class="tabs" id="reportTabs"></div>
+  <div class="table-scroll" id="reportTable"></div>
+
+  <h3>Which test flowers were misclassified?</h3>
+  <div class="table-scroll" id="misTable"></div>
+
+  <h3>Can we trust a single test score?</h3>
+  <p>
+    The test set has only <b id="testSize"></b> flowers, so <b>one mistake changes accuracy by about 3.3 points</b>.
+    To get a steadier estimate we also run <b>5-fold stratified cross-validation</b> on all 150 flowers:
+    the data is split 5 ways, and every part takes a turn as the test set. We report the mean ± standard deviation.
+  </p>
+  <div class="table-scroll" id="cvTable"></div>
+  <div class="insight warn">
+    <b>Be honest about Iris:</b> it is a small (150 flowers), clean, well-separated dataset, so very high scores are
+    normal and expected. Differences between models of a point or two are within the noise. These scores do
+    <u>not</u> mean the same models would be this accurate on harder real-world problems.
+  </div>
+</section>
+
+<!-- ============ PREDICT ============ -->
+<section class="card" id="predict">
+  <span class="step-no">Try it</span>
+  <h2>Classify your own flower</h2>
+  <p>
+    Move the sliders (or type values). The three <b>trained</b> models classify the flower live in your browser,
+    using the parameters learned in Python. The star on the chart shows where your flower lands among the real ones.
+  </p>
+  <div class="presets" id="presets"></div>
+  <div class="grid2 predict-grid">
+    <div>
+      <div id="sliders"></div>
+      <div id="oodBox"></div>
+    </div>
+    <div class="chart" id="predScatter"></div>
+  </div>
+  <div class="grid3" id="predCards"></div>
+  <div id="knnNeighbors"></div>
+</section>
+
+<!-- ============ CONCLUSION ============ -->
+<section class="card" id="conclusion">
+  <h2>Conclusion</h2>
+  <div id="conclusionText"></div>
+  <h3>Skills gained</h3>
+  <div class="grid3 skills">
+    <div><h4>📊 Numeric data analysis</h4><p>Loading data with pandas, summary statistics, histograms, scatter plots, correlation and ANOVA.</p></div>
+    <div><h4>🤖 Classification modelling</h4><p>Splitting data, scaling features without leakage, and training Logistic Regression, KNN and Decision Tree.</p></div>
+    <div><h4>✅ Evaluating results</h4><p>Accuracy, precision, recall, F1, confusion matrices and cross-validation – and knowing their limits.</p></div>
+  </div>
+  <h3>Limitations</h3>
+  <ul>
+    <li>Only 150 samples and 30 test flowers – scores are noisy.</li>
+    <li>Iris is easy; real data is messier (missing values, imbalance, noise).</li>
+    <li>Models only know these 3 species: a rose or tulip would still be forced into one of them.</li>
+    <li>The out-of-range warning is a simple range check, not a full anomaly detector.</li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <p>IrisLab · Virtual internship project · Python, pandas, scikit-learn + plain HTML/CSS/JS.</p>
+  <p class="muted">Data: Edgar Anderson (collected) · R.A. Fisher, 1936, <i>The use of multiple measurements in taxonomic problems</i> · bundled with scikit-learn · scikit-learn <span id="skv"></span>.</p>
+</footer>
+
+<script src="data.js"></script>
+<script src="model.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
